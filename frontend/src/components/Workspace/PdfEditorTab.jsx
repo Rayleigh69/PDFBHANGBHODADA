@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { addTextToPDF, addImageToPDF, downloadPDF } from '../../api';
 import { useApp } from '../../context/AppContext';
-import ValorantButton from '../Valorant/ValorantButton';
 
 /**
  * PdfEditorTab - Edit PDFs (Valorant styled)
@@ -122,8 +121,8 @@ function PdfEditorTab() {
     <div className="space-y-6">
       {/* PDF & Page Selection */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-[#0a0a0f] border-2 border-red-500/30 p-6">
-          <label className="block text-sm font-bold uppercase tracking-wider text-cyan-400 mb-3">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Select PDF
           </label>
           <select
@@ -133,18 +132,18 @@ function PdfEditorTab() {
               setEditedFilename(null);
               setSuccess(null);
             }}
-            className="w-full px-4 py-3 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none uppercase"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
           >
-            <option value="" className="bg-[#050509]">-- Choose a PDF --</option>
+            <option value="">-- Choose a PDF --</option>
             {uploadedPDFs.map((pdf) => (
-              <option key={pdf.pdf_id} value={pdf.pdf_id} className="bg-[#050509]">
+              <option key={pdf.pdf_id} value={pdf.pdf_id}>
                 {pdf.filename}
               </option>
             ))}
           </select>
         </div>
-        <div className="bg-[#0a0a0f] border-2 border-red-500/30 p-6">
-          <label className="block text-sm font-bold uppercase tracking-wider text-cyan-400 mb-3">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Page Number
           </label>
           <input
@@ -152,29 +151,29 @@ function PdfEditorTab() {
             min="1"
             value={pageNumber}
             onChange={(e) => setPageNumber(parseInt(e.target.value) || 1)}
-            className="w-full px-4 py-3 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
           />
         </div>
       </div>
 
       {/* Mode Tabs */}
-      <div className="flex gap-2 border-b-2 border-red-500/20">
+      <div className="flex gap-2 border-b border-gray-200">
         <button
           onClick={() => setActiveMode('text')}
-          className={`px-6 py-3 font-bold uppercase tracking-wider text-sm transition-all ${
+          className={`px-6 py-3 font-medium text-sm transition-all ${
             activeMode === 'text'
-              ? 'text-red-400 border-b-2 border-red-500'
-              : 'text-slate-400 hover:text-slate-300'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
           }`}
         >
           Add Text
         </button>
         <button
           onClick={() => setActiveMode('image')}
-          className={`px-6 py-3 font-bold uppercase tracking-wider text-sm transition-all ${
+          className={`px-6 py-3 font-medium text-sm transition-all ${
             activeMode === 'image'
-              ? 'text-red-400 border-b-2 border-red-500'
-              : 'text-slate-400 hover:text-slate-300'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
           }`}
         >
           Add Image
@@ -185,20 +184,20 @@ function PdfEditorTab() {
       <AnimatePresence>
         {error && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="bg-red-500/20 border-2 border-red-500/50 p-4 text-red-400"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
           >
-            {error}
+            {typeof error === 'string' ? error : String(error)}
           </motion.div>
         )}
         {success && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="bg-cyan-500/20 border-2 border-cyan-500/50 p-4 text-cyan-400"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg"
           >
             ✓ {success}
           </motion.div>
@@ -211,45 +210,45 @@ function PdfEditorTab() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           onSubmit={handleAddText}
-          className="bg-[#0a0a0f] border-2 border-red-500/30 p-6 space-y-4"
+          className="bg-white border border-gray-200 rounded-lg p-6 space-y-4 shadow-sm"
         >
           <div>
-            <label className="block text-sm font-bold uppercase tracking-wider text-cyan-400 mb-3">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Text Content
             </label>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               placeholder="Enter text to add..."
             />
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
                 X Position
               </label>
               <input
                 type="number"
                 value={textX}
                 onChange={(e) => setTextX(parseFloat(e.target.value) || 0)}
-                className="w-full px-4 py-3 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               />
             </div>
             <div>
-              <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
                 Y Position
               </label>
               <input
                 type="number"
                 value={textY}
                 onChange={(e) => setTextY(parseFloat(e.target.value) || 0)}
-                className="w-full px-4 py-3 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               />
             </div>
             <div>
-              <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
                 Font Size
               </label>
               <input
@@ -257,16 +256,17 @@ function PdfEditorTab() {
                 min="1"
                 value={fontSize}
                 onChange={(e) => setFontSize(parseInt(e.target.value) || 12)}
-                className="w-full px-4 py-3 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               />
             </div>
           </div>
-          <ValorantButton
+          <button
             type="submit"
             disabled={!selectedPDF || !text.trim() || isLoading}
+            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? 'Adding...' : 'Add Text'}
-          </ValorantButton>
+          </button>
         </motion.form>
       )}
 
@@ -276,49 +276,49 @@ function PdfEditorTab() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           onSubmit={handleAddImage}
-          className="bg-[#0a0a0f] border-2 border-red-500/30 p-6 space-y-4"
+          className="bg-white border border-gray-200 rounded-lg p-6 space-y-4 shadow-sm"
         >
           <div>
-            <label className="block text-sm font-bold uppercase tracking-wider text-cyan-400 mb-3">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Image File
             </label>
             <input
               type="file"
               accept="image/*"
               onChange={(e) => setImageFile(e.target.files[0] || null)}
-              className="w-full px-4 py-3 bg-[#050509] border-2 border-red-500/30 text-white file:mr-4 file:py-2 file:px-4 file:bg-red-500 file:text-white file:border-0 file:cursor-pointer hover:file:bg-red-400"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 file:mr-4 file:py-2 file:px-4 file:bg-blue-600 file:text-white file:border-0 file:rounded file:cursor-pointer hover:file:bg-blue-700"
             />
             {imageFile && (
-              <p className="mt-2 text-sm text-cyan-400">
+              <p className="mt-2 text-sm text-gray-600">
                 Selected: {imageFile.name}
               </p>
             )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
                 X Position
               </label>
               <input
                 type="number"
                 value={imageX}
                 onChange={(e) => setImageX(parseFloat(e.target.value) || 0)}
-                className="w-full px-4 py-3 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               />
             </div>
             <div>
-              <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
                 Y Position
               </label>
               <input
                 type="number"
                 value={imageY}
                 onChange={(e) => setImageY(parseFloat(e.target.value) || 0)}
-                className="w-full px-4 py-3 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               />
             </div>
             <div>
-              <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
                 Width
               </label>
               <input
@@ -326,11 +326,11 @@ function PdfEditorTab() {
                 min="1"
                 value={imageWidth}
                 onChange={(e) => setImageWidth(parseFloat(e.target.value) || 100)}
-                className="w-full px-4 py-3 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               />
             </div>
             <div>
-              <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
                 Height
               </label>
               <input
@@ -338,16 +338,17 @@ function PdfEditorTab() {
                 min="1"
                 value={imageHeight}
                 onChange={(e) => setImageHeight(parseFloat(e.target.value) || 100)}
-                className="w-full px-4 py-3 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               />
             </div>
           </div>
-          <ValorantButton
+          <button
             type="submit"
             disabled={!selectedPDF || !imageFile || isLoading}
+            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? 'Adding...' : 'Add Image'}
-          </ValorantButton>
+          </button>
         </motion.form>
       )}
 
@@ -358,15 +359,14 @@ function PdfEditorTab() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="bg-[#0a0a0f] border-2 border-cyan-500/30 p-6"
+            className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm"
           >
-            <ValorantButton
-              variant="secondary"
+            <button
               onClick={handleDownload}
-              className="w-full"
+              className="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
             >
               Download Edited PDF
-            </ValorantButton>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

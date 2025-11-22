@@ -2,7 +2,6 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createCustomPDF, downloadPDF } from '../../api';
 import { useApp } from '../../context/AppContext';
-import ValorantButton from '../Valorant/ValorantButton';
 
 /**
  * PdfCreatorTab - Canva-like PDF Creator (Valorant styled)
@@ -187,39 +186,40 @@ function PdfCreatorTab() {
       {/* Header Actions */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold uppercase tracking-wider text-cyan-400">
+          <h2 className="text-2xl font-semibold text-gray-900">
             Create Your PDF
           </h2>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-gray-600 mt-1">
             Design professional PDFs with text and images
           </p>
         </div>
-        <ValorantButton
+        <button
           onClick={generatePDF}
           disabled={elements.length === 0 || isGenerating}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isGenerating ? 'Generating...' : 'Generate PDF'}
-        </ValorantButton>
+        </button>
       </div>
 
       {/* Error/Success Messages */}
       <AnimatePresence>
         {error && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="bg-red-500/20 border-2 border-red-500/50 p-4 text-red-400"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
           >
-            {error}
+            {typeof error === 'string' ? error : String(error)}
           </motion.div>
         )}
         {success && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="bg-cyan-500/20 border-2 border-cyan-500/50 p-4 text-cyan-400"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg"
           >
             ✓ {success}
           </motion.div>
@@ -230,27 +230,27 @@ function PdfCreatorTab() {
         {/* Tool Panel */}
         <div className="lg:col-span-1 space-y-6">
           {/* Tool Selection */}
-          <div className="bg-[#0a0a0f] border-2 border-red-500/30 p-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-cyan-400 mb-4">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">
               Tools
             </h3>
             <div className="space-y-2">
               <button
                 onClick={() => setActiveTool('text')}
-                className={`w-full px-4 py-3 text-left uppercase tracking-wider text-sm transition-all ${
+                className={`w-full px-4 py-3 text-left font-medium text-sm transition-all rounded-lg ${
                   activeTool === 'text'
-                    ? 'bg-red-500/20 border-2 border-red-500 text-red-400'
-                    : 'bg-[#050509] border-2 border-red-500/30 text-slate-400 hover:border-red-500/50'
+                    ? 'bg-blue-50 border-2 border-blue-500 text-blue-600'
+                    : 'bg-gray-50 border-2 border-gray-200 text-gray-700 hover:border-gray-300'
                 }`}
               >
                 Text
               </button>
               <button
                 onClick={() => setActiveTool('image')}
-                className={`w-full px-4 py-3 text-left uppercase tracking-wider text-sm transition-all ${
+                className={`w-full px-4 py-3 text-left font-medium text-sm transition-all rounded-lg ${
                   activeTool === 'image'
-                    ? 'bg-red-500/20 border-2 border-red-500 text-red-400'
-                    : 'bg-[#050509] border-2 border-red-500/30 text-slate-400 hover:border-red-500/50'
+                    ? 'bg-blue-50 border-2 border-blue-500 text-blue-600'
+                    : 'bg-gray-50 border-2 border-gray-200 text-gray-700 hover:border-gray-300'
                 }`}
               >
                 Image
@@ -263,9 +263,9 @@ function PdfCreatorTab() {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-[#0a0a0f] border-2 border-red-500/30 p-4 space-y-4"
+              className="bg-white border border-gray-200 rounded-lg p-4 space-y-4 shadow-sm"
             >
-              <h3 className="text-sm font-bold uppercase tracking-wider text-cyan-400">
+              <h3 className="text-sm font-semibold text-gray-900">
                 Text Options
               </h3>
               <textarea
@@ -273,11 +273,11 @@ function PdfCreatorTab() {
                 onChange={(e) => setTextContent(e.target.value)}
                 placeholder="Enter text..."
                 rows={3}
-                className="w-full px-3 py-2 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               />
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
                     Font Size
                   </label>
                   <input
@@ -286,41 +286,41 @@ function PdfCreatorTab() {
                     max="72"
                     value={fontSize}
                     onChange={(e) => setFontSize(parseInt(e.target.value) || 24)}
-                    className="w-full px-3 py-2 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
                     Font Weight
                   </label>
                   <select
                     value={fontWeight}
                     onChange={(e) => setFontWeight(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                   >
                     <option value="normal">Normal</option>
                     <option value="bold">Bold</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
                     Color
                   </label>
                   <input
                     type="color"
                     value={textColor}
                     onChange={(e) => setTextColor(e.target.value)}
-                    className="w-full h-10 bg-[#050509] border-2 border-red-500/30 cursor-pointer"
+                    className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
                     Alignment
                   </label>
                   <select
                     value={textAlign}
                     onChange={(e) => setTextAlign(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                   >
                     <option value="left">Left</option>
                     <option value="center">Center</option>
@@ -328,13 +328,13 @@ function PdfCreatorTab() {
                   </select>
                 </div>
               </div>
-              <ValorantButton
+              <button
                 onClick={addTextElement}
                 disabled={!textContent.trim()}
-                className="w-full"
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Add Text
-              </ValorantButton>
+              </button>
             </motion.div>
           )}
 
@@ -343,29 +343,29 @@ function PdfCreatorTab() {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-[#0a0a0f] border-2 border-red-500/30 p-4 space-y-4"
+              className="bg-white border border-gray-200 rounded-lg p-4 space-y-4 shadow-sm"
             >
-              <h3 className="text-sm font-bold uppercase tracking-wider text-cyan-400">
+              <h3 className="text-sm font-semibold text-gray-900">
                 Image Options
               </h3>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setImageFile(e.target.files[0] || null)}
-                className="w-full px-3 py-2 bg-[#050509] border-2 border-red-500/30 text-white file:mr-4 file:py-2 file:px-4 file:bg-red-500 file:text-white file:border-0 file:cursor-pointer hover:file:bg-red-400"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 file:mr-4 file:py-2 file:px-4 file:bg-blue-600 file:text-white file:border-0 file:rounded file:cursor-pointer hover:file:bg-blue-700"
               />
               {imageFile && (
-                <p className="text-sm text-cyan-400">
+                <p className="text-sm text-gray-600">
                   Selected: {imageFile.name}
                 </p>
               )}
-              <ValorantButton
+              <button
                 onClick={addImageElement}
                 disabled={!imageFile}
-                className="w-full"
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Add Image
-              </ValorantButton>
+              </button>
             </motion.div>
           )}
 
@@ -374,46 +374,46 @@ function PdfCreatorTab() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-[#0a0a0f] border-2 border-cyan-500/30 p-4 space-y-4"
+              className="bg-white border border-gray-200 rounded-lg p-4 space-y-4 shadow-sm"
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-cyan-400">
+                <h3 className="text-sm font-semibold text-gray-900">
                   Properties
                 </h3>
                 <button
                   onClick={() => deleteElement(selectedElement)}
-                  className="text-red-400 hover:text-red-300 text-sm uppercase"
+                  className="text-red-600 hover:text-red-700 text-sm font-medium"
                 >
                   Delete
                 </button>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
                     X Position
                   </label>
                   <input
                     type="number"
                     value={selectedElementData.x}
                     onChange={(e) => updateElement(selectedElement, { x: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
                     Y Position
                   </label>
                   <input
                     type="number"
                     value={selectedElementData.y}
                     onChange={(e) => updateElement(selectedElement, { y: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                   />
                 </div>
                 {selectedElementData.type === 'image' && (
                   <>
                     <div>
-                      <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
                         Width
                       </label>
                       <input
@@ -421,11 +421,11 @@ function PdfCreatorTab() {
                         min="1"
                         value={selectedElementData.width}
                         onChange={(e) => updateElement(selectedElement, { width: parseFloat(e.target.value) || 100 })}
-                        className="w-full px-3 py-2 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
                         Height
                       </label>
                       <input
@@ -433,7 +433,7 @@ function PdfCreatorTab() {
                         min="1"
                         value={selectedElementData.height}
                         onChange={(e) => updateElement(selectedElement, { height: parseFloat(e.target.value) || 100 })}
-                        className="w-full px-3 py-2 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                       />
                     </div>
                   </>
@@ -441,7 +441,7 @@ function PdfCreatorTab() {
                 {selectedElementData.type === 'text' && (
                   <>
                     <div>
-                      <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
                         Font Size
                       </label>
                       <input
@@ -450,18 +450,18 @@ function PdfCreatorTab() {
                         max="72"
                         value={selectedElementData.fontSize}
                         onChange={(e) => updateElement(selectedElement, { fontSize: parseInt(e.target.value) || 24 })}
-                        className="w-full px-3 py-2 bg-[#050509] border-2 border-red-500/30 text-white focus:border-red-500 focus:outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs uppercase tracking-wider text-slate-400 mb-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
                         Color
                       </label>
                       <input
                         type="color"
                         value={selectedElementData.color}
                         onChange={(e) => updateElement(selectedElement, { color: e.target.value })}
-                        className="w-full h-10 bg-[#050509] border-2 border-red-500/30 cursor-pointer"
+                        className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
                       />
                     </div>
                   </>
@@ -473,14 +473,14 @@ function PdfCreatorTab() {
 
         {/* Canvas Area */}
         <div className="lg:col-span-3">
-          <div className="bg-[#0a0a0f] border-2 border-red-500/30 p-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-cyan-400 mb-4">
+          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">
               Canvas (A4 Size)
             </h3>
             <div
               ref={canvasRef}
               onClick={handleCanvasClick}
-              className="relative bg-white mx-auto"
+              className="relative bg-white mx-auto border border-gray-300 rounded shadow-sm"
               style={{
                 width: `${canvasWidth}px`,
                 height: `${canvasHeight}px`,
@@ -554,7 +554,7 @@ function DraggableElement({ element, isSelected, onClick, onDrag }) {
         onClick={onClick}
         onMouseDown={handleMouseDown}
         className={`absolute cursor-move ${
-          isSelected ? 'ring-2 ring-cyan-400' : ''
+          isSelected ? 'ring-2 ring-blue-500' : ''
         }`}
         style={{
           left: `${element.x}px`,
@@ -578,7 +578,7 @@ function DraggableElement({ element, isSelected, onClick, onDrag }) {
         onClick={onClick}
         onMouseDown={handleMouseDown}
         className={`absolute cursor-move ${
-          isSelected ? 'ring-2 ring-cyan-400' : ''
+          isSelected ? 'ring-2 ring-blue-500' : ''
         }`}
         style={{
           left: `${element.x}px`,

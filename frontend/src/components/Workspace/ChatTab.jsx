@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { aiChat, chatWithPDF } from '../../api';
+import { aiChat } from '../../api';
 import { useApp } from '../../context/AppContext';
 import ChatMessage from '../ChatMessage';
 import TypingIndicator from '../TypingIndicator';
+import ValorantButton from '../Valorant/ValorantButton';
 
 /**
- * ChatTab - Modern ChatPDF-style chat interface
+ * ChatTab - AI Assistant Chat (Valorant styled)
+ * Main interface for all AI capabilities: PDF handling, Q&A, analysis
  */
-function ChatTab({ selectedPDF }) {
+function ChatTab() {
   const { uploadedPDFs, addActivity, setUploadedPDFs } = useApp();
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
@@ -29,22 +31,17 @@ function ChatTab({ selectedPDF }) {
     if (messages.length === 0) {
       setMessages([{
         role: 'assistant',
-        content: "👋 Hi! I'm your AI assistant. I can help you understand and work with your PDFs.\n\n" +
-                 "• Ask questions about your PDF content\n" +
-                 "• Summarize documents\n" +
-                 "• Extract key information\n" +
-                 "• And much more!\n\n" +
-                 "Select a PDF from the sidebar to get started."
+        content: "👋 I'm your AI PDF assistant! I can help you:\n\n" +
+                 "📄 **PDF Operations**: Upload, split, merge, rotate, extract pages/images\n" +
+                 "💬 **Q&A**: Ask questions about your PDFs\n" +
+                 "📊 **Analysis**: Summarize, extract tables, keywords, and more\n\n" +
+                 "Just tell me what you'd like to do!"
       }]);
     }
   }, []);
 
   const handleSend = async () => {
     if (!inputValue.trim() || isLoading) return;
-    if (!selectedPDF) {
-      setError('Please select a PDF from the sidebar first');
-      return;
-    }
 
     const userMessage = inputValue.trim();
     setInputValue('');
@@ -56,45 +53,50 @@ function ChatTab({ selectedPDF }) {
     setIsLoading(true);
 
     try {
-      // Use chatWithPDF if a PDF is selected, otherwise use aiChat
-      let response;
-      if (selectedPDF) {
-        response = await chatWithPDF(selectedPDF, userMessage);
-        setMessages([
-          ...newMessages,
-          {
-            role: 'assistant',
-            content: response.answer || 'No answer provided',
-            sources: response.sources || []
-          }
-        ]);
-      } else {
-        // Fallback to general AI chat
-        const context = {
-          uploaded_pdfs: uploadedPDFs.map(pdf => ({
-            pdf_id: pdf.pdf_id,
-            filename: pdf.filename
-          }))
-        };
-        response = await aiChat(
-          newMessages.map(m => ({ role: m.role, content: m.content })),
-          context
-        );
-        setMessages([
-          ...newMessages,
-          {
-            role: 'assistant',
-            content: response.assistant_message,
-            sources: response.sources || [],
-            files: response.files || []
-          }
-        ]);
+      // Prepare context with uploaded PDFs
+      const context = {
+        uploaded_pdfs: uploadedPDFs.map(pdf => ({
+          pdf_id: pdf.pdf_id,
+          filename: pdf.filename
+        }))
+      };
+
+      // Call AI chat endpoint
+      const response = await aiChat(
+        newMessages.map(m => ({ role: m.role, content: m.content })),
+        context
+      );
+
+      // Add assistant response
+      setMessages([
+        ...newMessages,
+        {
+          role: 'assistant',
+          content: response.assistant_message,
+          sources: response.sources || [],
+          files: response.files || [],
+          actions: response.actions || []
+        }
+      ]);
+
+      // Handle new PDFs from actions (e.g., upload, split, merge)
+      if (response.files && response.files.length > 0) {
+        const newPDFs = response.files
+          .filter(f => f.type === 'pdf' && f.pdf_id)
+          .map(f => ({
+            pdf_id: f.pdf_id,
+            filename: f.filename
+          }));
+        
+        if (newPDFs.length > 0) {
+          setUploadedPDFs([...uploadedPDFs, ...newPDFs]);
+        }
       }
 
       // Add activity
       addActivity({
         type: 'chat',
-        title: `Chat: ${userMessage.substring(0, 50)}...`,
+        title: `AI Chat: ${userMessage.substring(0, 50)}...`,
       });
     } catch (err) {
       setError(err.response?.data?.detail || err.message || 'Chat failed');
@@ -112,122 +114,147 @@ function ChatTab({ selectedPDF }) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
-      {/* Chat Header */}
-      {selectedPDF && (
-        <div className="border-b border-gray-200 bg-white px-6 py-4">
-          <div className="flex items-center gap-3">
-            <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                {uploadedPDFs.find(p => p.pdf_id === selectedPDF)?.filename || 'Selected PDF'}
-              </p>
-              <p className="text-xs text-gray-500">Ready to chat</p>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="space-y-6">
+      {/* Info Banner */}
+      <div className="bg-[#0a0a0f] border-2 border-cyan-500/30 p-4">
+        <p className="text-sm text-cyan-400 uppercase tracking-wider">
+          💡 <strong>Tip:</strong> Ask me to upload PDFs, split/merge them, answer questions, summarize, or extract data!
+        </p>
+      </div>
 
       {/* Error Message */}
       <AnimatePresence>
         {error && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="bg-red-500/20 border-2 border-red-500/50 p-4 text-red-400"
           >
             {error}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Chat Messages Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-6">
-        {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center max-w-md">
-              <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Start a conversation</h3>
-              <p className="text-sm text-gray-500">
-                {selectedPDF 
-                  ? "Ask questions about your PDF and I'll help you understand it."
-                  : "Select a PDF from the sidebar to start chatting."}
+      {/* Chat Window */}
+      <div className="bg-[#0a0a0f] border-2 border-red-500/30 h-[600px] flex flex-col">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {messages.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-slate-500">
+              <p className="text-center uppercase tracking-wider">
+                Start a conversation with your AI assistant...
               </p>
             </div>
-          </div>
-        ) : (
-          <div className="max-w-3xl mx-auto space-y-6">
-            <AnimatePresence>
-              {messages.map((msg, index) => (
-                <ChatMessage
-                  key={index}
-                  message={msg.content}
-                  isUser={msg.role === 'user'}
-                  sources={msg.sources || []}
-                />
-              ))}
-            </AnimatePresence>
-            {isLoading && <TypingIndicator />}
-            <div ref={messagesEndRef} />
-          </div>
-        )}
-      </div>
-
-      {/* Input Area */}
-      <div className="border-t border-gray-200 bg-white px-6 py-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-end gap-3">
-            <div className="flex-1 relative">
-              <textarea
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                placeholder={selectedPDF ? "Ask a question about your PDF..." : "Select a PDF to start chatting..."}
-                rows={1}
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm text-gray-900 placeholder-gray-400"
-                disabled={isLoading || !selectedPDF}
-                style={{ minHeight: '48px', maxHeight: '120px' }}
-                onInput={(e) => {
-                  e.target.style.height = 'auto';
-                  e.target.style.height = e.target.scrollHeight + 'px';
-                }}
-              />
-              <button
-                onClick={handleSend}
-                disabled={!inputValue.trim() || isLoading || !selectedPDF}
-                className="absolute right-2 bottom-2 p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isLoading ? (
-                  <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                  </svg>
-                )}
-              </button>
-            </div>
-          </div>
-          {!selectedPDF && (
-            <p className="mt-2 text-xs text-gray-500 text-center">
-              Please select a PDF from the sidebar to start chatting
-            </p>
+          ) : (
+            <>
+              <AnimatePresence>
+                {messages.map((msg, index) => (
+                  <div key={index}>
+                    <ChatMessage
+                      message={msg.content}
+                      isUser={msg.role === 'user'}
+                      sources={msg.sources || []}
+                    />
+                    {/* Show files if any */}
+                    {msg.files && msg.files.length > 0 && (
+                      <div className="mt-2 ml-4">
+                        <div className="bg-[#050509] border border-cyan-500/20 p-3 rounded">
+                          <p className="text-xs uppercase tracking-wider text-cyan-400 mb-2">
+                            Generated Files:
+                          </p>
+                          <div className="space-y-1">
+                            {msg.files.map((file, idx) => (
+                              <div key={idx} className="text-xs text-slate-300">
+                                📄 {file.filename}
+                                {file.download_url && (
+                                  <a
+                                    href={`http://localhost:8000${file.download_url}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="ml-2 text-cyan-400 hover:text-cyan-300"
+                                  >
+                                    Download
+                                  </a>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </AnimatePresence>
+              {isLoading && <TypingIndicator />}
+              <div ref={messagesEndRef} />
+            </>
           )}
         </div>
+
+        {/* Input Area */}
+        <div className="border-t-2 border-red-500/30 p-4 flex gap-3">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Ask me anything about PDFs..."
+            className="flex-1 px-4 py-3 bg-[#050509] border-2 border-red-500/30 text-white placeholder-slate-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 uppercase tracking-wider"
+            disabled={isLoading}
+          />
+          <ValorantButton
+            onClick={handleSend}
+            disabled={!inputValue.trim() || isLoading}
+          >
+            {isLoading ? 'Sending...' : 'Send'}
+          </ValorantButton>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setInputValue('Upload these PDFs and show me page previews')}
+          className="bg-[#0a0a0f] border-2 border-red-500/30 p-4 text-left hover:border-red-500/60 transition-colors"
+        >
+          <div className="text-2xl mb-2">📄</div>
+          <div className="text-sm font-bold uppercase tracking-wider text-red-400">
+            Upload PDFs
+          </div>
+          <div className="text-xs text-slate-400 mt-1">
+            Upload and preview PDFs
+          </div>
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setInputValue('Summarize this PDF in short mode')}
+          className="bg-[#0a0a0f] border-2 border-cyan-500/30 p-4 text-left hover:border-cyan-500/60 transition-colors"
+        >
+          <div className="text-2xl mb-2">📊</div>
+          <div className="text-sm font-bold uppercase tracking-wider text-cyan-400">
+            Summarize
+          </div>
+          <div className="text-xs text-slate-400 mt-1">
+            Get PDF summary
+          </div>
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setInputValue('Extract all images from this PDF')}
+          className="bg-[#0a0a0f] border-2 border-teal-500/30 p-4 text-left hover:border-teal-500/60 transition-colors"
+        >
+          <div className="text-2xl mb-2">🖼️</div>
+          <div className="text-sm font-bold uppercase tracking-wider text-teal-400">
+            Extract
+          </div>
+          <div className="text-xs text-slate-400 mt-1">
+            Extract images/pages
+          </div>
+        </motion.button>
       </div>
     </div>
   );

@@ -108,7 +108,21 @@ function UploadTab() {
       }
     } catch (err) {
       console.error('Upload error:', err);
-      const errorMessage = err.response?.data?.detail || err.message || 'Upload failed';
+      // Extract error message safely
+      let errorMessage = 'Upload failed';
+      if (err) {
+        if (typeof err === 'string') {
+          errorMessage = err;
+        } else if (err.response?.data?.detail) {
+          errorMessage = err.response.data.detail;
+        } else if (err.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.message) {
+          errorMessage = err.message;
+        } else if (err.toString && typeof err.toString === 'function') {
+          errorMessage = err.toString();
+        }
+      }
       setError(errorMessage);
     } finally {
       setIsUploading(false);
@@ -135,7 +149,7 @@ function UploadTab() {
             exit={{ opacity: 0, y: -10 }}
             className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
           >
-            {error}
+            {typeof error === 'string' ? error : String(error)}
           </motion.div>
         )}
         {successMessage && (

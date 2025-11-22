@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import { AppProvider } from './context/AppContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import AppShell from './components/Layout/AppShell';
@@ -11,9 +12,10 @@ import Workspace from './pages/Workspace';
  */
 function App() {
   return (
-    <AppProvider>
-      <BrowserRouter>
-        <Routes>
+    <ErrorBoundary>
+      <AppProvider>
+        <BrowserRouter>
+          <Routes>
           {/* Public routes */}
           <Route
             path="/sign-in"
@@ -74,9 +76,10 @@ function App() {
               </>
             }
           />
-        </Routes>
-      </BrowserRouter>
-    </AppProvider>
+          </Routes>
+        </BrowserRouter>
+      </AppProvider>
+    </ErrorBoundary>
   );
 }
 

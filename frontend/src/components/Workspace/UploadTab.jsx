@@ -55,7 +55,15 @@ function UploadTab() {
       console.log('Upload response:', response);
       
       // Handle both array and object response formats
-      const pdfs = Array.isArray(response) ? response : (response.pdfs || []);
+      let pdfs = [];
+      if (Array.isArray(response)) {
+        pdfs = response;
+      } else if (response && typeof response === 'object') {
+        pdfs = response.pdfs || (response.pdf_id ? [response] : []);
+      }
+      
+      // Validate and filter PDFs
+      pdfs = pdfs.filter(pdf => pdf && (pdf.pdf_id || pdf.id) && pdf.filename);
       
       if (pdfs.length === 0) {
         setError('No PDFs were uploaded. Please check the file format.');
@@ -63,22 +71,40 @@ function UploadTab() {
         return;
       }
       
+      // Normalize PDF objects to ensure consistent structure
+      const normalizedPDFs = pdfs.map(pdf => ({
+        pdf_id: pdf.pdf_id || pdf.id || String(Date.now() + Math.random()),
+        filename: pdf.filename || 'Unknown PDF'
+      }));
+      
       // Use functional update to avoid stale state
-      setUploadedPDFs((prev) => [...prev, ...pdfs]);
-      setSuccessMessage(`Successfully uploaded ${pdfs.length} PDF(s)`);
+      setUploadedPDFs((prev) => {
+        try {
+          return [...prev, ...normalizedPDFs];
+        } catch (stateError) {
+          console.error('State update error:', stateError);
+          return prev; // Return previous state if update fails
+        }
+      });
+      
+      setSuccessMessage(`Successfully uploaded ${normalizedPDFs.length} PDF(s)`);
       
       // Add activities safely
       try {
-        pdfs.forEach((pdf) => {
-          if (pdf && pdf.filename) {
-            addActivity({
-              type: 'upload',
-              title: `Uploaded ${pdf.filename}`,
-            });
+        normalizedPDFs.forEach((pdf) => {
+          if (pdf && pdf.filename && addActivity) {
+            try {
+              addActivity({
+                type: 'upload',
+                title: `Uploaded ${pdf.filename}`,
+              });
+            } catch (activityErr) {
+              console.warn('Error adding activity for PDF:', pdf.filename, activityErr);
+            }
           }
         });
       } catch (activityError) {
-        console.warn('Error adding activity:', activityError);
+        console.warn('Error adding activities:', activityError);
       }
     } catch (err) {
       console.error('Upload error:', err);
@@ -187,24 +213,30 @@ function UploadTab() {
             Uploaded PDFs ({uploadedPDFs.length})
           </h3>
           <div className="space-y-2">
-            {uploadedPDFs.map((pdf) => (
-              <motion.div
-                key={pdf.pdf_id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-sm font-medium text-gray-900">{pdf.filename}</span>
-                </div>
-                <span className="text-xs text-gray-500">
-                  {pdf.pdf_id.substring(0, 8)}...
-                </span>
-              </motion.div>
-            ))}
+            {uploadedPDFs.map((pdf, index) => {
+              const pdfId = pdf?.pdf_id || pdf?.id || `pdf-${index}`;
+              const filename = pdf?.filename || 'Unknown PDF';
+              const displayId = typeof pdfId === 'string' ? pdfId.substring(0, 8) : 'N/A';
+              
+              return (
+                <motion.div
+                  key={pdfId}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-900">{filename}</span>
+                  </div>
+                  <span className="text-xs text-gray-500">
+                    {displayId}...
+                  </span>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       )}

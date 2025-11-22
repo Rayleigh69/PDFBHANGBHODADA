@@ -43,22 +43,42 @@ export const aiChat = async (messages, context = null) => {
  * @returns {Promise<Array<{pdf_id: string, filename: string}>>}
  */
 export const uploadPDFs = async (files) => {
-  const formData = new FormData();
-  Array.from(files).forEach((file) => {
-    formData.append('files', file);
-  });
-  
-  // Create a custom config without Content-Type header for FormData
-  const config = {
-    headers: {
-      ...api.defaults.headers.common,
-    },
-  };
-  // Delete Content-Type to let browser set it with boundary for multipart/form-data
-  delete config.headers['Content-Type'];
-  
-  const response = await api.post('/api/pdf/upload', formData, config);
-  return response.data;
+  try {
+    const formData = new FormData();
+    Array.from(files).forEach((file) => {
+      if (file && file instanceof File) {
+        formData.append('files', file);
+      }
+    });
+    
+    // Create a custom config without Content-Type header for FormData
+    const config = {
+      headers: {
+        ...api.defaults.headers.common,
+      },
+    };
+    // Delete Content-Type to let browser set it with boundary for multipart/form-data
+    delete config.headers['Content-Type'];
+    
+    const response = await api.post('/api/pdf/upload', formData, config);
+    
+    // Validate response
+    if (!response || !response.data) {
+      throw new Error('Invalid response from server');
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('Upload API error:', error);
+    // Re-throw with more context
+    if (error.response) {
+      throw new Error(error.response.data?.detail || error.response.statusText || 'Upload failed');
+    } else if (error.request) {
+      throw new Error('Network error: Could not reach server');
+    } else {
+      throw error;
+    }
+  }
 };
 
 /**

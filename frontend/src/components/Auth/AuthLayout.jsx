@@ -7,27 +7,27 @@ import { FiFileText, FiMessageSquare, FiEdit, FiZap } from 'react-icons/fi';
 function AuthLayout({ children, title, subtitle }) {
   const features = [
     { 
-      icon: <FiMessageSquare className="w-5 h-5 text-cyan-400" />, 
+      icon: <FiMessageSquare className="w-5 h-5" />, 
       text: 'Chat with your PDFs using AI' 
     },
     { 
-      icon: <FiEdit className="w-5 h-5 text-teal-400" />, 
+      icon: <FiEdit className="w-5 h-5" />, 
       text: 'Edit PDFs with text and images' 
     },
     { 
-      icon: <FiFileText className="w-5 h-5 text-red-400" />, 
+      icon: <FiFileText className="w-5 h-5" />, 
       text: 'Create custom PDFs from scratch' 
     },
     { 
-      icon: <FiZap className="w-5 h-5 text-cyan-400" />, 
+      icon: <FiZap className="w-5 h-5" />, 
       text: 'Fast, secure, and easy to use' 
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#050509] flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0a0a0f] to-[#050509] border-r-2 border-red-500/30 p-12 text-white">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-blue-700 p-12 text-white">
         <div className="max-w-md m-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -36,13 +36,15 @@ function AuthLayout({ children, title, subtitle }) {
             className="mb-8"
           >
             <div className="flex items-center mb-6">
-              <FiFileText className="w-8 h-8 text-red-400 mr-3" />
-              <span className="text-2xl font-black uppercase tracking-widest text-red-400">PDF GENIE</span>
+              <svg className="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+              </svg>
+              <span className="text-2xl font-semibold">ChatPDF</span>
             </div>
-            <h1 className="text-3xl font-black uppercase tracking-wider mb-3 text-red-400">
-              {title || 'Welcome to PDF Genie'}
+            <h1 className="text-3xl font-semibold mb-3">
+              {title || 'Welcome to ChatPDF'}
             </h1>
-            <p className="text-slate-400 uppercase tracking-wider text-sm">
+            <p className="text-blue-100 text-sm">
               {subtitle || 'Your AI-powered PDF companion. Chat, edit, and create with ease.'}
             </p>
           </motion.div>
@@ -62,10 +64,10 @@ function AuthLayout({ children, title, subtitle }) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + index * 0.1 }}
               >
-                <div className="mt-0.5">
+                <div className="mt-0.5 text-blue-200">
                   {feature.icon}
                 </div>
-                <span className="text-slate-400 uppercase tracking-wider text-sm">{feature.text}</span>
+                <span className="text-blue-100 text-sm">{feature.text}</span>
               </motion.div>
             ))}
           </motion.div>
@@ -73,17 +75,19 @@ function AuthLayout({ children, title, subtitle }) {
       </div>
 
       {/* Right side - Auth form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 lg:p-12 bg-[#050509]">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 lg:p-12 bg-white">
         <div className="w-full max-w-md">
           <div className="lg:hidden mb-8 text-center">
             <div className="flex items-center justify-center mb-4">
-              <FiFileText className="w-8 h-8 text-red-400 mr-2" />
-              <span className="text-2xl font-black uppercase tracking-widest text-red-400">PDF GENIE</span>
+              <svg className="w-8 h-8 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+              </svg>
+              <span className="text-2xl font-semibold text-gray-900">ChatPDF</span>
             </div>
-            <h2 className="text-xl font-bold uppercase tracking-wider text-red-400 mb-1">
+            <h2 className="text-xl font-semibold text-gray-900 mb-1">
               {title || 'Welcome back'}
             </h2>
-            <p className="text-slate-400 text-sm uppercase tracking-wider">
+            <p className="text-gray-600 text-sm">
               {subtitle || 'Sign in to your account'}
             </p>
           </div>

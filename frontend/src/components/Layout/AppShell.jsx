@@ -14,23 +14,23 @@ function AppShell({ children }) {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#050509]">
+    <div className="min-h-screen bg-gray-50">
       {/* Top Navbar */}
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-40 bg-[#0a0a0f]/95 backdrop-blur-sm border-b-2 border-red-500/30"
+        className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/workspace" className="flex items-center">
               <motion.div
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.02 }}
                 className="flex items-center"
               >
-                <span className="text-2xl font-black uppercase tracking-widest text-red-400 glow-red px-4 py-2">
-                  PDF GENIE
+                <span className="text-xl font-semibold text-gray-900">
+                  PDF Assistant
                 </span>
               </motion.div>
             </Link>
@@ -38,20 +38,20 @@ function AppShell({ children }) {
             {/* Right side - Profile */}
             <div className="flex items-center gap-4">
               {user && (
-                <span className="hidden sm:block text-sm text-slate-400 uppercase tracking-wider">
+                <span className="hidden sm:block text-sm text-gray-600">
                   {user.firstName || user.emailAddresses[0]?.emailAddress}
                 </span>
               )}
               <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setIsDashboardOpen(true)}
                 className="cursor-pointer"
               >
                 <UserButton
                   appearance={{
                     elements: {
-                      avatarBox: 'w-10 h-10 border-2 border-red-500/50 hover:border-red-400 transition-colors',
+                      avatarBox: 'w-9 h-9 border border-gray-300 hover:border-gray-400 transition-colors',
                     },
                   }}
                 />

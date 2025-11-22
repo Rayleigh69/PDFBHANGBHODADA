@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { uploadPDFs } from '../../api';
 import { useApp } from '../../context/AppContext';
-import ValorantButton from '../Valorant/ValorantButton';
 
 /**
- * UploadTab - Upload PDFs (Valorant styled)
+ * UploadTab - Clean modern PDF upload interface
  */
 function UploadTab() {
   const { uploadedPDFs, setUploadedPDFs, addActivity } = useApp();
@@ -13,6 +12,7 @@ function UploadTab() {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const fileInputRef = useRef(null);
 
   const handleDrop = async (e) => {
     e.preventDefault();
@@ -50,19 +50,40 @@ function UploadTab() {
     setSuccessMessage(null);
 
     try {
+      console.log('Uploading files:', files.map(f => f.name));
       const response = await uploadPDFs(files);
+      console.log('Upload response:', response);
       
-      setUploadedPDFs([...uploadedPDFs, ...response]);
-      setSuccessMessage(`Successfully uploaded ${response.length} PDF(s)`);
+      // Handle both array and object response formats
+      const pdfs = Array.isArray(response) ? response : (response.pdfs || []);
       
-      response.forEach((pdf) => {
-        addActivity({
-          type: 'upload',
-          title: `Uploaded ${pdf.filename}`,
+      if (pdfs.length === 0) {
+        setError('No PDFs were uploaded. Please check the file format.');
+        setIsUploading(false);
+        return;
+      }
+      
+      // Use functional update to avoid stale state
+      setUploadedPDFs((prev) => [...prev, ...pdfs]);
+      setSuccessMessage(`Successfully uploaded ${pdfs.length} PDF(s)`);
+      
+      // Add activities safely
+      try {
+        pdfs.forEach((pdf) => {
+          if (pdf && pdf.filename) {
+            addActivity({
+              type: 'upload',
+              title: `Uploaded ${pdf.filename}`,
+            });
+          }
         });
-      });
+      } catch (activityError) {
+        console.warn('Error adding activity:', activityError);
+      }
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || 'Upload failed');
+      console.error('Upload error:', err);
+      const errorMessage = err.response?.data?.detail || err.message || 'Upload failed';
+      setError(errorMessage);
     } finally {
       setIsUploading(false);
     }
@@ -71,10 +92,10 @@ function UploadTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold uppercase tracking-wider text-cyan-400 mb-2">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
           Upload PDFs
         </h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-gray-600">
           Upload PDF files to chat with, edit, or analyze
         </p>
       </div>
@@ -83,20 +104,20 @@ function UploadTab() {
       <AnimatePresence>
         {error && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="bg-red-500/20 border-2 border-red-500/50 p-4 text-red-400"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
           >
             {error}
           </motion.div>
         )}
         {successMessage && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="bg-cyan-500/20 border-2 border-cyan-500/50 p-4 text-cyan-400"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg"
           >
             ✓ {successMessage}
           </motion.div>
@@ -112,25 +133,30 @@ function UploadTab() {
         }}
         onDragLeave={() => setIsDragging(false)}
         className={`
-          border-2 border-dashed p-12 text-center transition-all
+          border-2 border-dashed rounded-xl p-12 text-center transition-all
           ${isDragging
-            ? 'border-red-500 bg-red-500/10'
-            : 'border-red-500/30 hover:border-red-500/50 bg-[#0a0a0f]'
+            ? 'border-blue-500 bg-blue-50'
+            : 'border-gray-300 hover:border-blue-400 bg-gray-50'
           }
         `}
       >
         <motion.div
-          initial={{ scale: 0.9 }}
-          animate={{ scale: isDragging ? 1.05 : 1 }}
+          initial={{ scale: 0.95 }}
+          animate={{ scale: isDragging ? 1.02 : 1 }}
           className="space-y-4"
         >
-          <div className="text-6xl mb-4">📄</div>
-          <h3 className="text-xl font-bold uppercase tracking-wider text-red-400">
+          <div className="flex justify-center">
+            <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900">
             {isDragging ? 'Drop PDFs Here' : 'Drag & Drop PDFs'}
           </h3>
-          <p className="text-slate-400">or</p>
-          <label>
+          <p className="text-sm text-gray-500">or</p>
+          <div>
             <input
+              ref={fileInputRef}
               type="file"
               multiple
               accept="application/pdf"
@@ -138,21 +164,26 @@ function UploadTab() {
               className="hidden"
               disabled={isUploading}
             />
-            <ValorantButton
-              as="span"
+            <button
+              type="button"
               disabled={isUploading}
-              className="inline-block cursor-pointer"
+              onClick={() => {
+                if (fileInputRef.current && !isUploading) {
+                  fileInputRef.current.click();
+                }
+              }}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isUploading ? 'Uploading...' : 'Select PDFs'}
-            </ValorantButton>
-          </label>
+            </button>
+          </div>
         </motion.div>
       </div>
 
       {/* Uploaded PDFs List */}
       {uploadedPDFs.length > 0 && (
-        <div className="bg-[#0a0a0f] border-2 border-red-500/30 p-6">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-cyan-400 mb-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">
             Uploaded PDFs ({uploadedPDFs.length})
           </h3>
           <div className="space-y-2">
@@ -161,14 +192,16 @@ function UploadTab() {
                 key={pdf.pdf_id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center justify-between p-3 bg-[#050509] border border-red-500/20 hover:border-red-500/40 transition-colors"
+                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">📄</span>
-                  <span className="text-white">{pdf.filename}</span>
+                  <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-sm font-medium text-gray-900">{pdf.filename}</span>
                 </div>
-                <span className="text-xs text-slate-500 uppercase tracking-wider">
-                  ID: {pdf.pdf_id.substring(0, 8)}...
+                <span className="text-xs text-gray-500">
+                  {pdf.pdf_id.substring(0, 8)}...
                 </span>
               </motion.div>
             ))}

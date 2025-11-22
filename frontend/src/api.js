@@ -48,11 +48,16 @@ export const uploadPDFs = async (files) => {
     formData.append('files', file);
   });
   
-  const response = await api.post('/api/pdf/upload', formData, {
+  // Create a custom config without Content-Type header for FormData
+  const config = {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      ...api.defaults.headers.common,
     },
-  });
+  };
+  // Delete Content-Type to let browser set it with boundary for multipart/form-data
+  delete config.headers['Content-Type'];
+  
+  const response = await api.post('/api/pdf/upload', formData, config);
   return response.data;
 };
 
